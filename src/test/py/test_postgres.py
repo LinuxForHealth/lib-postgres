@@ -5,7 +5,7 @@ from asynctest import CoroutineMock, MagicMock, patch
 
 async def test():
 
-    db = await postgres.create_postgres_pool()
+    db = await postgres.create_postgres_pool('Postgres')
     result = await db.execute('select * from distributors')
     print(result)
 

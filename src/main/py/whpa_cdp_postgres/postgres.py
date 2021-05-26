@@ -5,28 +5,32 @@ import functools
 
 from . import config
 
-async def create_postgres_pool(name=None, config_section=None):
-    if name is None:
-        name = str(uuid.uuid4())
+async def create_postgres_pool(config_section=None, name=None):
     if config_section is None:
         config_section = 'Postgres'
+    if name is None:
+        name = config_section
 
     config.load_config()
     postgres_config = config.get_config_section(config_section)
-    postgres = Postgres(postgres_config)
+    postgres = Postgres(name, postgres_config)
     await postgres.initialize_connection()
     return postgres
 
 
 class Postgres():
-    def __init__(self, postgres_config):
+    def __init__(self, name, postgres_config):
         self.pool = None
+        self.name = name
         username = postgres_config['username']
         password = postgres_config['password']
         hostport = postgres_config['hostport']
         database = postgres_config['database']
         self.dsn = f'postgresql://{username}:{password}@{hostport}/{database}'
         self.initialized = False
+        
+    def get_name(self):
+        return self.name
 
     async def initialize_connection(self):
         self.pool = await asyncpg.create_pool(
