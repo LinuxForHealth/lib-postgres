@@ -36,12 +36,15 @@ sonarqube {
 //Whi CAF Python Build Section
 python {
 
-    //pythonBinary = 'python3' //local development
+    // pythonBinary = 'python3' //local development
+    extraIndexUrls = ["https://${taasArtifactoryUsername}:${taasArtifactoryPassword}@na.artifactory.swg-devops.com/artifactory/api/pypi/wh-imaging-pypi-virtual/simple"]
+    trustedHosts "https://na.artifactory.swg-devops.com"
     //Python dependencies start
     pip 'asyncpg:0.22.0'
 
     pip 'whi-caf-lib-configreader:3.2.0'
     pip 'whi-caf-lib-python-logger:3.2.0'
+    pip 'pytest-mock:3.6.1'
     //Python dependencies end
 
     // Change to ./opt/... on Windows OS and not /opt/...
@@ -52,7 +55,7 @@ python {
 
 task cdpHl7BatchSetupBuild(type: PythonTask) {
     module = 'pip'
-    extraArgs = ['install', 'pytest==5.4.0', 'pytest-cov==2.7.1', 'pytest-asyncio==0.15.1', 'twine==1.14.0', 'flake8==3.7.8', 'black==19.10b0', 'asynctest==0.13.0']
+    extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'pytest-asyncio==0.15.1', 'pytest-mock==3.6.1', 'twine==1.14.0', 'flake8==3.7.8', 'black==19.10b0', 'asynctest==0.13.0']       
 }
 
 task cdpHl7BatchGenerateReqs {
@@ -90,7 +93,7 @@ task cdpHl7BatchTestPrep(type: PythonTask) {
 
 task cdpHl7BatchTest(type: PythonTask) {
     module = 'pytest'
-    extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v']
+    extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v', '-rP']
 }
 
 task cdpHl7BatchCoverage(type: PythonTask) {
