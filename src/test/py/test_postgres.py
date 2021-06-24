@@ -1,8 +1,7 @@
 from whpa_cdp_postgres import postgres
 import pytest
-import asyncio
-import asynctest
-from asynctest import CoroutineMock, MagicMock, patch
+from unittest.mock import AsyncMock
+
 
 @pytest.mark.asyncio
 async def test(mocker):
@@ -13,13 +12,17 @@ async def test(mocker):
         'hostport': '',
         'database': ''
     }
+    query = 'select * from distributors'
     db = postgres.Postgres('test',config)
     db.initialized = True
     mocker.patch.object(db, "pool")
-    print("START")
-    print('pool='+db.pool)
-    result = await db.execute('select * from distributors')
-    print(result)
+    connection = AsyncMock()
+    db.pool.acquire().__aenter__.return_value = connection
+    connection.execute = AsyncMock()
+    connection.execute.return_value = 3
+    result = await db.execute(query)
+    connection.execute.assert_called_with(query)
+    assert result == 3
 
     # result = await db.fetch('select * from distributors')
     # print(result)
