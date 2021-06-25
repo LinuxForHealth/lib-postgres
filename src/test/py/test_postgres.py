@@ -1,20 +1,22 @@
 from whpa_cdp_postgres import postgres
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
+
+#initialize a Postgres object for tests that require one.
+config = {
+    'username': 'none',
+    'password': 'empty',
+    'hostport': '',
+    'database': ''
+}
+db = postgres.Postgres('test',config)
+db.initialized = True
 
 
 @pytest.mark.asyncio
-async def test(mocker):
+async def test_execute(mocker):
 
-    config = {
-        'username': 'none',
-        'password': 'empty',
-        'hostport': '',
-        'database': ''
-    }
-    query = 'select * from distributors'
-    db = postgres.Postgres('test',config)
-    db.initialized = True
+    query = 'SELECT * from distributors'
     mocker.patch.object(db, "pool")
     connection = AsyncMock()
     db.pool.acquire().__aenter__.return_value = connection
@@ -24,20 +26,21 @@ async def test(mocker):
     connection.execute.assert_called_with(query)
     assert result == 3
 
-    # result = await db.fetch('select * from distributors')
-    # print(result)
+@pytest.mark.asyncio
+async def test_fetch(mocker):
 
-    # @db.query("select * from distributors")
-    # async def test_query(): pass
+    query = 'UPDATE distributors SET id=0'
+    mocker.patch.object(db, "pool")
+    connection = AsyncMock()
+    db.pool.acquire().__aenter__.return_value = connection
+    connection.fetch = AsyncMock()
+    connection.fetch.return_value = 3
+    result = await db.fetch(query)
+    connection.fetch.assert_called_with(query)
+    assert result == 3
 
-    # @db.query("select * from distributors", call='fetch')
-    # async def test_fetch_query(): pass
-
-    # print(await test_query())
-    # print(await test_fetch_query())
-
-    #     HL7BatchTrackingDao.insert_new_batch.assert_called_once()
-    # HL7BatchTrackingDao.update_hl7batch_with_storage_id.assert_called_once()
-    # mock_minio_upload.assert_called_once()
-    # mock_kafka_call.assert_called_once()
+def test_get_name():
+    db.name = 'name'
+    result = db.get_name()
+    assert result == 'name'
 
