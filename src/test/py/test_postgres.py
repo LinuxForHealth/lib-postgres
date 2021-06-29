@@ -1,45 +1,46 @@
 from whpa_cdp_postgres import postgres
-import asyncio
-import asynctest
-from asynctest import CoroutineMock, MagicMock, patch
+import pytest
+from unittest.mock import AsyncMock, Mock
 
-async def test():
-
-    db = await postgres.create_postgres_pool('Postgres')
-    result = await db.execute('select * from distributors')
-    print(result)
-
-    result = await db.fetch('select * from distributors')
-    print(result)
-
-    @db.query("select * from distributors")
-    async def test_query(): pass
-
-    @db.query("select * from distributors", call='fetch')
-    async def test_fetch_query(): pass
-
-    print(await test_query())
-    print(await test_fetch_query())
+#initialize a Postgres object for tests that require one.
+config = {
+    'username': 'none',
+    'password': 'empty',
+    'hostport': '',
+    'database': ''
+}
+db = postgres.Postgres('test',config)
+db.initialized = True
 
 
+@pytest.mark.asyncio
+async def test_execute(mocker):
 
+    query = 'SELECT * from distributors'
+    mocker.patch.object(db, "pool")
+    connection = AsyncMock()
+    db.pool.acquire().__aenter__.return_value = connection
+    connection.execute = AsyncMock()
+    connection.execute.return_value = 3
+    result = await db.execute(query)
+    connection.execute.assert_called_with(query)
+    assert result == 3
 
-class PatientLookupDaoTest(asynctest.TestCase):
-    async def test_patient_lookup(self):
-        '''
-        mock_pool = MagicMock(name='asyncpg')
-        with patch('asyncpg.create_pool', new=mock_pool):
-            pool = MagicMock(name="pool")
-            conn = CoroutineMock(name="conn")
-            mock_pool().__aenter__.return_value = pool
-            pool.acquire().__aenter__.return_value = conn
-            conn.fetch = CoroutineMock()
-            conn.fetch.return_value = 5
-            result = await patient_lookup_dao.patient_lookup(None)
-        
-        self.assertEqual(result, 5)
-        '''
-        pass
+@pytest.mark.asyncio
+async def test_fetch(mocker):
 
-if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(test())
+    query = 'UPDATE distributors SET id=0'
+    mocker.patch.object(db, "pool")
+    connection = AsyncMock()
+    db.pool.acquire().__aenter__.return_value = connection
+    connection.fetch = AsyncMock()
+    connection.fetch.return_value = 3
+    result = await db.fetch(query)
+    connection.fetch.assert_called_with(query)
+    assert result == 3
+
+def test_get_name():
+    db.name = 'name'
+    result = db.get_name()
+    assert result == 'name'
+
