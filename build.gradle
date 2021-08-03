@@ -41,6 +41,8 @@ python {
     trustedHosts "https://na.artifactory.swg-devops.com"
     //Python dependencies start
     pip 'asyncpg:0.22.0'
+    pip 'pydantic:1.8.2'
+    pip 'python-dotenv:0.19.0'
 
     pip 'whi-caf-lib-configreader:3.2.0'
     pip 'whi-caf-lib-python-logger:3.2.0'
@@ -93,7 +95,7 @@ task cdpHl7BatchTestPrep(type: PythonTask) {
 
 task cdpHl7BatchTest(type: PythonTask) {
     module = 'pytest'
-    extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v', '-rP']
+    extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v', '-rP', '-rx']
 }
 
 task cdpHl7BatchCoverage(type: PythonTask) {

@@ -1,18 +1,17 @@
 import asyncpg
 from contextlib import asynccontextmanager
+from caf_logger import logger as caflogger
 import uuid
 import functools
 
 from . import config
 
-async def create_postgres_pool(config_section=None, name=None):
-    if config_section is None:
-        config_section = 'Postgres'
-    if name is None:
-        name = config_section
+logger = caflogger.get_logger('whpa_cdp_postgres.postgres')
 
-    config.load_config()
-    postgres_config = config.get_config_section(config_section)
+
+async def create_postgres_pool(postgres_config=None, name=None):
+    if postgres_config is None:
+        postgres_config = config.PostgresLibSettings()
     postgres = Postgres(name, postgres_config)
     await postgres.initialize_connection()
     return postgres
@@ -22,10 +21,10 @@ class Postgres():
     def __init__(self, name, postgres_config):
         self.pool = None
         self.name = name
-        username = postgres_config['username']
-        password = postgres_config['password']
-        hostport = postgres_config['hostport']
-        database = postgres_config['database']
+        username = postgres_config.username
+        password = postgres_config.password
+        hostport = postgres_config.hostport
+        database = postgres_config.database
         self.dsn = f'postgresql://{username}:{password}@{hostport}/{database}'
         self.initialized = False
         
