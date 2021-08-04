@@ -54,13 +54,12 @@ python {
     envPath = 'build/venv'
 }
 
-
-task cdpHl7BatchSetupBuild(type: PythonTask) {
+task pySetupBuild(type: PythonTask) {
     module = 'pip'
     extraArgs = ['install', 'pytest==6.2.4', 'pytest-cov==2.7.1', 'pytest-asyncio==0.15.1', 'pytest-mock==3.6.1', 'twine==1.14.0', 'flake8==3.7.8', 'black==19.10b0', 'asynctest==0.13.0']       
 }
 
-task cdpHl7BatchGenerateReqs {
+task pyGenerateReqs {
     doLast {
         def newFile = new File("${project.projectDir}/pinned.txt")
         newFile.delete()
@@ -71,7 +70,7 @@ task cdpHl7BatchGenerateReqs {
     }
 }
 
-task cdpHl7BatchSetupBuildProperties {
+task pySetupBuildProperties {
     doLast {
         def newFile = new File("${project.projectDir}/setup.properties")
         newFile.delete()
@@ -83,27 +82,27 @@ task cdpHl7BatchSetupBuildProperties {
     }
 }
 
-task cdpHl7BatchBuildWheel(type: PythonTask) {
+task pyBuildWheel(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['bdist_wheel', '-d', pyDistDir, '-k']
 }
 
-task cdpHl7BatchTestPrep(type: PythonTask) {
+task pyTestPrep(type: PythonTask) {
     command = 'setup.py'
     extraArgs = ['develop']
 }
 
-task cdpHl7BatchTest(type: PythonTask) {
+task pyTest(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--junitxml='+pyTestReportPath, '-v', '-rP', '-rx']
 }
 
-task cdpHl7BatchCoverage(type: PythonTask) {
+task pyCoverage(type: PythonTask) {
     module = 'pytest'
     extraArgs = [pyTestDir, '--cov', pySrcDir, '--cov-report=xml:'+pyXmlCoveragePath, '--cov-report=html:'+pyHtmlCoveragePath, '--cov-report=term']
 }
 
-task cdpHl7BatchClean {
+task pyClean {
     doLast {
         exec {
             commandLine 'rm', '-rf', 'build'
@@ -111,7 +110,7 @@ task cdpHl7BatchClean {
     }
 }
 
-task cdpHl7BatchPublishArtifacts(type: PythonTask) {
+task pyPublishArtifacts(type: PythonTask) {
     doFirst {
         def taasArtifactoryUsername = "${taasArtifactoryUsername}"
         def taasArtifactoryPassword = "${taasArtifactoryPassword}"
@@ -120,20 +119,16 @@ task cdpHl7BatchPublishArtifacts(type: PythonTask) {
     }
 }
 
-task cdpHl7BatchFlake8(type: PythonTask) {
+task pyFlake8(type: PythonTask) {
     module = 'flake8'
     extraArgs = [pySrcDir]
 }
 
-task cdpHl7BatchBlack(type: PythonTask) {
+task pyBlack(type: PythonTask) {
     module = 'black'
     extraArgs = [pySrcDir]
 }
 
-task dockerBuild(type: Exec) {
-
-    commandLine 'docker', 'run', '-v', System.getProperty("user.dir")+':/tmp/project', '-v','/var/run/docker.sock:/var/run/docker.sock','-e','PROJECT_ROOT=/tmp/project', '-e' ,'PROJECT_DIST='+pyDistDir+'/*.whl', '-e', 'PROJECT_YAML=project.yaml' ,'-e','IMAGE_NAME=hl7batchreceiver:1.0', 'py-service-wrapper-build-utils:latest'
-}
 
 task build {}
 task test {}
@@ -143,23 +138,23 @@ task flake8 {}
 task clean {}
 task black {}
 
-project.tasks.cdpHl7BatchTest.dependsOn project.tasks.cdpHl7BatchSetupBuild
-project.tasks.cdpHl7BatchTest.dependsOn project.tasks.cdpHl7BatchTestPrep
-project.tasks.cdpHl7BatchTestPrep.dependsOn project.tasks.cdpHl7BatchSetupBuildProperties
-project.tasks.cdpHl7BatchCoverage.dependsOn project.tasks.cdpHl7BatchSetupBuild
-project.tasks.cdpHl7BatchCoverage.dependsOn project.tasks.cdpHl7BatchTestPrep
-project.tasks.cdpHl7BatchPublishArtifacts.dependsOn project.tasks.cdpHl7BatchSetupBuild
-project.tasks.cdpHl7BatchFlake8.dependsOn project.tasks.cdpHl7BatchSetupBuild
+project.tasks.pyTest.dependsOn project.tasks.pySetupBuild
+project.tasks.pyTest.dependsOn project.tasks.pyTestPrep
+project.tasks.pyTestPrep.dependsOn project.tasks.pySetupBuildProperties
+project.tasks.pyCoverage.dependsOn project.tasks.pySetupBuild
+project.tasks.pyCoverage.dependsOn project.tasks.pyTestPrep
+project.tasks.pyPublishArtifacts.dependsOn project.tasks.pySetupBuild
+project.tasks.pyFlake8.dependsOn project.tasks.pySetupBuild
 
-project.tasks.build.dependsOn project.tasks.cdpHl7BatchSetupBuild
-project.tasks.build.dependsOn project.tasks.cdpHl7BatchSetupBuildProperties
-project.tasks.build.dependsOn project.tasks.cdpHl7BatchGenerateReqs
-project.tasks.build.dependsOn project.tasks.cdpHl7BatchTest
-project.tasks.build.finalizedBy project.tasks.cdpHl7BatchBuildWheel
+project.tasks.build.dependsOn project.tasks.pySetupBuild
+project.tasks.build.dependsOn project.tasks.pySetupBuildProperties
+project.tasks.build.dependsOn project.tasks.pyGenerateReqs
+project.tasks.build.dependsOn project.tasks.pyTest
+project.tasks.build.finalizedBy project.tasks.pyBuildWheel
 
-project.tasks.test.finalizedBy project.tasks.cdpHl7BatchTest
-project.tasks.coverage.finalizedBy project.tasks.cdpHl7BatchCoverage
-project.tasks.clean.finalizedBy project.tasks.cdpHl7BatchClean
-project.tasks.uploadArchives.finalizedBy project.tasks.cdpHl7BatchPublishArtifacts
-project.tasks.flake8.finalizedBy project.tasks.cdpHl7BatchFlake8
-project.tasks.black.finalizedBy project.tasks.cdpHl7BatchBlack
+project.tasks.test.finalizedBy project.tasks.pyTest
+project.tasks.coverage.finalizedBy project.tasks.pyCoverage
+project.tasks.clean.finalizedBy project.tasks.pyClean
+project.tasks.uploadArchives.finalizedBy project.tasks.pyPublishArtifacts
+project.tasks.flake8.finalizedBy project.tasks.pyFlake8
+project.tasks.black.finalizedBy project.tasks.pyBlack
