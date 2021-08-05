@@ -4,9 +4,7 @@ import re
 from whpa_cdp_postgres import postgres
 from whpa_cdp_postgres import logging_codes
 
-from caf_logger import logger as caflogger
-
-logger = caflogger.get_logger(__name__)
+import logging
 
 
 class PostgresAdmin:
@@ -42,7 +40,7 @@ class PostgresAdmin:
             result = await self._postgres_access.fetch(sql)
             version = result[0][PostgresAdmin.SCHEMA_VERSION_COLUMN_NAME]
         except asyncpg.exceptions.UndefinedTableError:
-            logger.warn(
+            logging.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
@@ -119,9 +117,9 @@ class PostgresAdmin:
                     await self._postgres_access.execute(stmt)
                 # There's no, "IF NOT EXIST" for database creation. Handle it in the code.
                 except (asyncpg.exceptions.DuplicateDatabaseError):
-                    logger.info(logging_codes.DATABASE_EXISTS)
+                    logging.info(logging_codes.DATABASE_EXISTS)
                 except Exception as e:
-                    logger.error(
+                    logging.error(
                         logging_codes.ERROR_EXECUTING_SQL, str(e), stmt, exc_info=e
                     )
                     raise
@@ -143,13 +141,13 @@ class PostgresAdmin:
         try:
             await self._postgres_access.execute(sql, str(version))
         except asyncpg.exceptions.UndefinedTableError:
-            logger.warn(
+            logging.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
 
             if create_schema_table:
-                logger.info(logging_codes.CREATING_SCHEMA_VERSION_TABLE, schema_name)
+                logging.info(logging_codes.CREATING_SCHEMA_VERSION_TABLE, schema_name)
                 await self.create_schema_version_table(schema_name)
                 # Try it again!
                 await self.insert_schema_version(

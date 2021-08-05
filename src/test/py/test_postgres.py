@@ -1,11 +1,8 @@
 from whpa_cdp_postgres import postgres
 import pytest
 from unittest.mock import AsyncMock, Mock
-from caf_logger import logger as caflogger
-
 from whpa_cdp_postgres import config
 
-logger = caflogger.get_logger('whpa_cdp_postgres.test_postgres')
 #initialize a Postgres object for tests that require one.
 configuration = config.PostgresLibSettings (
     username = 'none',

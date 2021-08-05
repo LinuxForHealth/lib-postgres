@@ -5,10 +5,7 @@ import functools
 
 from . import config
 from whpa_cdp_postgres import logging_codes
-from caf_logger import logger as caflogger
-
-logger = caflogger.get_logger(__name__)
-
+import logging
 
 async def create_postgres_pool(config_section=None, name=None):
     if config_section is None:
@@ -60,7 +57,7 @@ class Postgres:
                     try:
                         await conn.execute(stmt)
                     except Exception as e:
-                        logger.error(
+                        logging.error(
                             logging_codes.ERROR_EXECUTING_SQL, str(e), stmt, exc_info=e,
                         )
                         raise

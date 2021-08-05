@@ -19,27 +19,27 @@ CONFIG_ACCESSED_BEFORE_LOADING = (
 )
 ERROR_EXECUTING_SQL = (
     "PGLIBERR002",
-    "Caught exception '{}' when running SQL statement '{}'",
+    "Caught exception '%s' when running SQL statement '%s'",
 )
 
 # Warnings
 MISSING_CONFIG_ENV = (
     "PGLIBWARN001",
-    "{} environment variables not defined. Loading default config...",
+    "'%s' environment variables not defined. Loading default config...",
 )
 MISSING_CONFIG_FILE = (
     "PGLIBWARN002",
-    "Config file {} not found. Please check config file path and name...",
+    "Config file '%s' not found. Please check config file path and name...",
 )
 TABLE_NOT_FOUND = (
     "PGLIBWARN002",
-    "Table {} not found. Assuming schema is not installed and version is 0",
+    "Table '%s' not found. Assuming schema is not installed and version is 0",
 )
 
 # Info
-LOADING_CONFIG = ("PGLIBLOG001", "Loading postgres config and secrets from: {} and {}")
+LOADING_CONFIG = ("PGLIBLOG001", "Loading postgres config and secrets from: '%s' and '%s'")
 DATABASE_EXISTS = ("PGLIBLOG002", "Database already exists, not creating.")
 CREATING_SCHEMA_VERSION_TABLE = (
     "PGLIBLOG003",
-    "Creating schema_version table in schema {}",
+    "Creating schema_version table in schema '%s'",
 )

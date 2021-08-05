@@ -2,12 +2,11 @@ import os
 
 from pydantic import ValidationError
 from whpa_cdp_postgres import config as configuration
+
 import pytest
 from unittest.mock import AsyncMock, Mock
-from caf_logger import logger as caflogger
+import logging
 import importlib
-
-logger = caflogger.get_logger('whpa_cdp_postgres.test_config')
 
 #test defaults and basic loading
 #test env override
@@ -21,35 +20,91 @@ def reset_env_vars():
         if env_var in os.environ:
             del os.environ[env_var]
 
-def test_defaults_and_that_bad_file_is_not_an_error():
-    #TODO: consider that defaults are a bad idea and split this test to an error if nothing is given for a specific, a test that env + no secret is fine and secret + no env is fine
+def test_unpopulated_username_fails():
+    with pytest.raises(ValidationError):
+        test_object = configuration.PostgresLibSettings(
+            password='test_password',
+            hostport='test_hostport',
+            database='test_database',
+        )
+
+def test_unpopulated_password_fails():
+    with pytest.raises(ValidationError):
+        test_object = configuration.PostgresLibSettings(
+            username='test_username',
+            hostport='test_hostport',
+            database='test_database',
+        )
+
+def test_unpopulated_hostport_fails():
+    with pytest.raises(ValidationError):
+        test_object = configuration.PostgresLibSettings(
+            username='test_username',
+            password='test_password',
+            database='test_database',
+        )
+
+def test_unpopulated_database_fails():
+    with pytest.raises(ValidationError):
+        test_object = configuration.PostgresLibSettings(
+            username='test_username',
+            password='test_password',
+            hostport='test_hostport',
+        )
+
+def test_nonexistent_env_file_is_not_an_error():
+
     os.environ["WHPA_CDP_POSTGRES_CONFIG_FILE"]="non-existent.env"
-    os.environ["WHPA_CDP_POSTGRES_SECRETS"]="non-existent/secrets"
-    test_object = configuration.PostgresLibSettings()
+
+    test_object = configuration.PostgresLibSettings(_secrets_dir='src/test/resources/full_secrets')
 
     assert test_object is not None
-    logger.warn(("BEHOLD", str(test_object)))
     expected = configuration.PostgresLibSettings(
-        username = 'postgres',
-        password = "",
-        hostport = "localhost:5432",
-        database = "defaultdb",
-
+        username='testsecretusername',
+        password='testsecretpassword',
+        hostport='testsecrethostport',
+        database='testsecretdatabase',
     )
     assert expected == test_object
 
-def test_defaults_and_that_none_file_is_not_an_error():
-    test_object = configuration.PostgresLibSettings()
+def test_nonexistent_secrets_file_is_not_an_error():
+
+    test_object = configuration.PostgresLibSettings(_secrets_dir=None, _env_file='src/test/resources/full_postgres.env')
 
     assert test_object is not None
-    logger.warn(("BEHOLD", str(test_object)))
-    test_object = configuration.PostgresLibSettings(_env_file=None, _secrets_dir=None)  #This is the only way to set this.  Setting an env variable to None is not possible (as env vars are strings) and empty string just means that it uses the default name
     expected = configuration.PostgresLibSettings(
-        username = 'postgres',
-        password = "",
-        hostport = "localhost:5432",
-        database = "defaultdb",
+        username='testenvusername',
+        password='testenvpassword',
+        hostport='testenvhostport',
+        database='testenvdatabase',
+    )
+    assert expected == test_object
 
+def test_None_env_file_is_not_an_error():
+
+    os.environ["WHPA_CDP_POSTGRES_CONFIG_FILE"]="non-existent.env"
+
+    test_object = configuration.PostgresLibSettings(_secrets_dir='src/test/resources/full_secrets')
+
+    assert test_object is not None
+    expected = configuration.PostgresLibSettings(
+        username='testsecretusername',
+        password='testsecretpassword',
+        hostport='testsecrethostport',
+        database='testsecretdatabase',
+    )
+    assert expected == test_object
+
+def test_None_secrets_file_is_not_an_error():
+
+    test_object = configuration.PostgresLibSettings(_env_file='src/test/resources/full_postgres.env', _secrets_dir=None)
+
+    assert test_object is not None
+    expected = configuration.PostgresLibSettings(
+        username='testenvusername',
+        password='testenvpassword',
+        hostport='testenvhostport',
+        database='testenvdatabase',
     )
     assert expected == test_object
 
@@ -61,7 +116,6 @@ def test_env_var_override_succeeds():
     test_object = configuration.PostgresLibSettings()
 
     assert test_object is not None
-    logger.warn(("BEHOLD", str(test_object)))
     assert test_object.username == 'overridden_username'
 
 def test_field_override():
@@ -74,36 +128,10 @@ def test_field_override():
     )
 
     assert test_object is not None
-    logger.warn(("BEHOLD", str(test_object)))
     assert test_object.username == 'test_username'
     assert test_object.password == 'test_password'
     assert test_object.hostport == 'test_hostport'
     assert test_object.database == 'test_database'
-
-# def test_env_var_filenames():
-#     os.environ["WHPA_CDP_POSTGRES_CONFIG_FILE"]="overridden_file"
-#     test_object = configuration.PostgresLibSettings()
-#
-#     assert test_object is not None
-#     logger.warn(("BEHOLD", str(test_object)))
-#     assert test_object.username == 'something to fail so I see warnings'
-#
-# def mock_files(secret_dir)
-#     def flexible_side_effect(file_name):
-#         if file_name in file_map:
-#             return file_map[file_name]
-#         else:
-#             global g__test_utils__original_open
-#             return g__test_utils__original_open(file_name)
-#
-#     global g__test_utils__original_open
-#     return_value = MagicMock(name='open', spec=g__test_utils__original_open)
-#     return_value.side_effect = flexible_side_effect
-#     return return_value
-
-
-#test default filenames work
-    #may need fancy mocking.  This seems not doable
 
 def test_env_var_override_all_secrets():
 
@@ -283,7 +311,6 @@ def test_input_param_is_case_sensitive():
             HoStNaMe='tEsTiNpUtPaRaMHoStNaMe',
             DaTaBaSe='tEsTiNpUtPaRaMDaTaBaSe',
         )
-
 
 def test_env_var_is_not_case_sensitive_in_keys():
 

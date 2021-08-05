@@ -43,10 +43,6 @@ python {
     pip 'asyncpg:0.22.0'
     pip 'pydantic:1.8.2'
     pip 'python-dotenv:0.19.0'
-
-    pip 'whi-caf-lib-configreader:3.2.0'
-    pip 'whi-caf-lib-python-logger:3.2.0'
-    pip 'pytest-mock:3.6.1'
     //Python dependencies end
 
     // Change to ./opt/... on Windows OS and not /opt/...

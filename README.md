@@ -41,6 +41,7 @@ The PostgresLibSettings is a subclass of the pydantic BaseSettings and, as such,
 Note that python does not immediately update environment variable values, so when calling from within python, you should use one of the `__init__` parameters.
 If for some reason, you _need_ to set environment variables programmatically (EG, this project's unit tests), use `importlib.reload(configuration)` (from `import importlib`).
 
+
 #### Configuration from direct instantiation (Recommended for testing)
 ```$python
 PostgresLibSettings(username=<username>, password=<password>, hostname=<hostname>, database=<database>)
