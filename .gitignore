@@ -46,3 +46,5 @@ volumes/files/
 volumes/nifi/conf/archive
 volumes/nifi/conf/nifi.properties
 
+.python-version
+virtualenv

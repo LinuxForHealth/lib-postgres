@@ -31,7 +31,7 @@ This image can be used to test the service/ run it locally without building etc.
 ---
 ## Usage
 
-The postgres library is expected to be invoked through the create_postgres_pool(configuration, name) function in whpa_cdp_postgres/postgres.py.
+The postgres library is expected to be invoked through the create_postgres_pool(postgres_config, name) function in whpa_cdp_postgres/postgres.py.
 
 ### Configurating
 
