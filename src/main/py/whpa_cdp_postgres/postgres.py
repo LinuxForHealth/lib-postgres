@@ -1,12 +1,11 @@
 import asyncpg
 from contextlib import asynccontextmanager
-import uuid
 import functools
 
 from . import config
-from whpa_cdp_postgres import logging_codes
-import logging
+from whpa_cdp_postgres import logging_codes, logger_util
 
+logger = logger_util.get_logger(__name__)
 async def create_postgres_pool(postgres_config=None, name=None):
     if postgres_config is None:
         postgres_config = config.PostgresLibSettings()
@@ -50,7 +49,7 @@ class Postgres:
                     try:
                         await conn.execute(stmt)
                     except Exception as e:
-                        logging.error(
+                        logger.error(
                             logging_codes.ERROR_EXECUTING_SQL, str(e), stmt, exc_info=e,
                         )
                         raise

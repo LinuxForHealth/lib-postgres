@@ -1,12 +1,9 @@
 import asyncpg
 import re
 
-from whpa_cdp_postgres import postgres
-from whpa_cdp_postgres import logging_codes
+from whpa_cdp_postgres import logging_codes, logger_util
 
-import logging
-
-
+logger = logger_util.get_logger(__name__)
 class PostgresAdmin:
     """Class to encapsulate administrative methods of postgres. These are mostly methods used to manage schemas"""
 
@@ -40,7 +37,7 @@ class PostgresAdmin:
             result = await self._postgres_access.fetch(sql)
             version = result[0][PostgresAdmin.SCHEMA_VERSION_COLUMN_NAME]
         except asyncpg.exceptions.UndefinedTableError:
-            logging.warning(
+            logger.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
@@ -117,9 +114,9 @@ class PostgresAdmin:
                     await self._postgres_access.execute(stmt)
                 # There's no, "IF NOT EXIST" for database creation. Handle it in the code.
                 except (asyncpg.exceptions.DuplicateDatabaseError):
-                    logging.info(logging_codes.DATABASE_EXISTS)
+                    logger.info(logging_codes.DATABASE_EXISTS)
                 except Exception as e:
-                    logging.error(
+                    logger.error(
                         logging_codes.ERROR_EXECUTING_SQL, str(e), stmt, exc_info=e
                     )
                     raise
@@ -141,13 +138,13 @@ class PostgresAdmin:
         try:
             await self._postgres_access.execute(sql, str(version))
         except asyncpg.exceptions.UndefinedTableError:
-            logging.warning(
+            logger.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
 
             if create_schema_table:
-                logging.info(logging_codes.CREATING_SCHEMA_VERSION_TABLE, schema_name)
+                logger.info(logging_codes.CREATING_SCHEMA_VERSION_TABLE, schema_name)
                 await self.create_schema_version_table(schema_name)
                 # Try it again!
                 await self.insert_schema_version(
