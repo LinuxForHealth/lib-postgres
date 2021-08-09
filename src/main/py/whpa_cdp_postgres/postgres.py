@@ -7,17 +7,10 @@ from . import config
 from whpa_cdp_postgres import logging_codes
 import logging
 
-async def create_postgres_pool(config_section=None, name=None):
-    if config_section is None:
-        config_section = 'Postgres'
-    if name is None:
-        name = config_section
-
-
 async def create_postgres_pool(postgres_config=None, name=None):
     if postgres_config is None:
         postgres_config = config.PostgresLibSettings()
-    postgres = Postgres(name, postgres_config)
+    postgres = Postgres(postgres_config=postgres_config, name=name)
     await postgres.initialize_connection()
     return postgres
 
