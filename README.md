@@ -105,7 +105,7 @@ If the file doesn't exist, no configuration values are set from it.
 PostgresLibSettings(_secrets_dir=<directory>)
 ```
 
-Within the chosen directory should be up to four files (the names of which are not case sensitive):
+Within the chosen directory should be up to four files (the names of which are case sensitive based on file system (so deployments would be, but local in OSX/Windows wouldn't be)):
     postgres_lib_username, postgres_lib_password, postgres_lib_hostport, postgres_lib_database
 Each of these files contains the exact string value that should be set in the configuration value
 

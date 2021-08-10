@@ -371,31 +371,8 @@ def test_env_file_is_not_case_sensitive_in_keys():
 
     assert test_object != unexpected
 
-def test_secret_file_is_not_case_sensitive_in_keys():
-
-    importlib.reload(configuration)
-    test_object = configuration.PostgresLibSettings(_env_file=None, _secrets_dir='src/test/resources/mixed_case_secrets')
-
-    reset_env_vars()
-
-    expected = configuration.PostgresLibSettings(
-        username='TeStSeCrEtUsErNaMe',
-        password='TeStSeCrEtPaSsWoRd',
-        hostport='TeStSeCrEtHoStPoRt',
-        database='TeStSeCrEtDaTaBaSe',
-    )
-
-    assert test_object == expected
-
-    # It should still have case sensitive values
-    unexpected = configuration.PostgresLibSettings(
-        username='testsecretusername',
-        password='testsecretpassword',
-        hostport='testsecrethostport',
-        database='testsecretdatabase',
-    )
-
-    assert test_object != unexpected
+# Case sensitive test for secret is not used because it depends on the case sensitivity of the underlying OS (which is different between the linux build servers and the osx development machines
+# def test_secret_file_is_not_case_sensitive_in_keys()
 
 def test_mixed_values():
     os.environ["POSTGRES_LIB_HOSTPORT"] = "testenvvarhostport"
