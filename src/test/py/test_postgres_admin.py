@@ -1,11 +1,16 @@
-from whpa_cdp_postgres import postgres
-from whpa_cdp_postgres import postgres_admin
+from whpa_cdp_postgres import postgres, postgres_admin, config
 
 import pytest
 
 
 # initialize a Postgres object for tests that require one.
-config = {"username": "none", "password": "empty", "hostport": "", "database": ""}
+config = config.PostgresLibSettings(
+    username = "none",
+    password = "empty",
+    hostport = "",
+    database =  ""
+)
+
 db = postgres.Postgres("test", config)
 db.initialized = True
 

@@ -1,4 +1,5 @@
 *.iml
+.idea
 .DS_Store
 */__pycache__/*
 build
@@ -45,3 +46,5 @@ volumes/files/
 volumes/nifi/conf/archive
 volumes/nifi/conf/nifi.properties
 
+.python-version
+virtualenv

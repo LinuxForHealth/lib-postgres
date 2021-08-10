@@ -1,14 +1,9 @@
 import asyncpg
 import re
 
-from whpa_cdp_postgres import postgres
-from whpa_cdp_postgres import logging_codes
+from whpa_cdp_postgres import logging_codes, logger_util
 
-from caf_logger import logger as caflogger
-
-logger = caflogger.get_logger(__name__)
-
-
+logger = logger_util.get_logger(__name__)
 class PostgresAdmin:
     """Class to encapsulate administrative methods of postgres. These are mostly methods used to manage schemas"""
 
@@ -42,7 +37,7 @@ class PostgresAdmin:
             result = await self._postgres_access.fetch(sql)
             version = result[0][PostgresAdmin.SCHEMA_VERSION_COLUMN_NAME]
         except asyncpg.exceptions.UndefinedTableError:
-            logger.warn(
+            logger.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
@@ -143,7 +138,7 @@ class PostgresAdmin:
         try:
             await self._postgres_access.execute(sql, str(version))
         except asyncpg.exceptions.UndefinedTableError:
-            logger.warn(
+            logger.warning(
                 logging_codes.TABLE_NOT_FOUND,
                 f"{schema_name}.{PostgresAdmin.SCHEMA_VERSION_TABLE_NAME}",
             )
